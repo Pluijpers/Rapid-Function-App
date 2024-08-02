@@ -11,20 +11,13 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
-using Convert = Rapid.Core.Convert;
+using Convert = Rapid.Function.Core.Convert;
 
 namespace Rapid.Function;
 
-public class StandardizeJsonFunction
+public class StandardizeJsonFunction(ILogger<StandardizeJsonFunction> log)
 {
-    private readonly ILogger<StandardizeJsonFunction> _logger;
-
-    public StandardizeJsonFunction(ILogger<StandardizeJsonFunction> log)
-    {
-        _logger = log;
-    }
-
-    [FunctionName("Standardize Json Data Request")]
+    [FunctionName("StandardizeJsonDataRequest")]
     [OpenApiOperation("StandardizeJsonDataRequest",
         Description =
             "Standardize Data License request data in JSON format regardless of the specified field mnemonics.")]
@@ -36,9 +29,9 @@ public class StandardizeJsonFunction
     [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "text/plain; charset=utf-8", typeof(string),
         Description = "BAD with error message.")]
     public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req)
     {
-        _logger.LogInformation("Standardize Json Data Request function is triggered.");
+        log.LogInformation("Standardize Json Data Request function is triggered.");
 
         try
         {
@@ -49,7 +42,7 @@ public class StandardizeJsonFunction
             {
                 var message = result.Message;
 
-                _logger.LogError(message);
+                log.LogError(message);
 
                 var badResult = new BadRequestObjectResult(message);
                 badResult.ContentTypes.Add("text/plain; charset=utf-8");

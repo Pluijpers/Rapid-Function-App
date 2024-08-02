@@ -11,22 +11,15 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
-using Rapid.Core.Models;
 using Rapid.Function.Models;
-using Convert = Rapid.Core.Convert;
+using Convert = Rapid.Function.Core.Convert;
+using CsvToJsonSettings = Rapid.Function.Core.Models.CsvToJsonSettings;
 
 namespace Rapid.Function;
 
-public class CsvToJsonFunction
+public class CsvToJsonFunction(ILogger<CsvToJsonFunction> log)
 {
-    private readonly ILogger<CsvToJsonFunction> _logger;
-
-    public CsvToJsonFunction(ILogger<CsvToJsonFunction> log)
-    {
-        _logger = log;
-    }
-
-    [FunctionName("Csv To Json")]
+    [FunctionName("CsvToJson")]
     [OpenApiOperation("CsvToJson", Description = "Convert a CSV file into its JSON equivalent.")]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code",
         In = OpenApiSecurityLocationType.Query)]
@@ -37,10 +30,9 @@ public class CsvToJsonFunction
     [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "text/plain; charset=utf-8", typeof(string),
         Description = "BAD with error message.")]
     public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]
-        HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req)
     {
-        _logger.LogInformation("Csv To Json conversion function is triggered.");
+        log.LogInformation("Csv To Json conversion function is triggered.");
 
         try
         {
@@ -62,7 +54,7 @@ public class CsvToJsonFunction
             {
                 const string message = "No value for the fileContent query string parameter provided.";
 
-                _logger.LogError(message);
+                log.LogError(message);
 
                 var badResult = new BadRequestObjectResult(message);
                 badResult.ContentTypes.Add("text/plain; charset=utf-8");
